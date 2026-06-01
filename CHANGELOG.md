@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- **2026-06-01 Protractor**: Add application icon
 - **2026-06-01 Protractor**: Add ruler mode with cm/pixel measurement and auto-DPI detection
 - **2026-06-01 Protractor**: Separate protractor and ruler tool states with independent persistence
 - **2026-06-01 Protractor**: Support click-through overlay with smart hit detection on control points

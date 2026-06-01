@@ -10,6 +10,11 @@
     <AssemblyName>Protractor</AssemblyName>
     <RootNamespace>Protractor</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
 
 </Project>
