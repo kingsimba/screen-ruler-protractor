@@ -29,11 +29,15 @@ public partial class App : Application
         var resetItem = new WinForms.ToolStripMenuItem("重置位置");
         resetItem.Click += (_, _) => _overlay?.ResetToCenter();
 
+        var modeItem = new WinForms.ToolStripMenuItem("切换 直尺 / 量角器");
+        modeItem.Click += (_, _) => _overlay?.ToggleMode();
+
         var exitItem = new WinForms.ToolStripMenuItem("退出");
         exitItem.Click += (_, _) => ExitApp();
 
         menu.Items.Add(toggleItem);
         menu.Items.Add(resetItem);
+        menu.Items.Add(modeItem);
         menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add(exitItem);
 
@@ -61,7 +65,7 @@ public partial class App : Application
         }
     }
 
-    private void ExitApp()
+    internal void ExitApp()
     {
         if (_tray is not null)
         {

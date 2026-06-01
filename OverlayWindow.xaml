@@ -44,6 +44,15 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Shared right-click menu (used by the protractor vertex and the ruler body) -->
+        <ContextMenu x:Key="HandleMenu" Opened="HandleMenu_Opened">
+            <MenuItem Header="切换为直尺" Click="MenuToggleMode_Click"/>
+            <MenuItem Header="重置位置" Click="MenuReset_Click"/>
+            <Separator/>
+            <MenuItem Header="隐藏" Click="MenuHide_Click"/>
+            <MenuItem Header="退出" Click="MenuExit_Click"/>
+        </ContextMenu>
     </Window.Resources>
 
     <Canvas x:Name="Root">
@@ -54,21 +63,32 @@
         <!-- Angle arc -->
         <Path x:Name="ArcPath" Stroke="#FFFF8C00" StrokeThickness="3" Fill="#33FF8C00"/>
 
+        <!-- Ruler body + tick marks (ruler mode only) -->
+        <Polygon x:Name="RulerBody" Stroke="#FF1E90FF" StrokeThickness="2"
+                 Fill="#221E90FF" Visibility="Collapsed" Cursor="SizeAll"
+                 ContextMenu="{StaticResource HandleMenu}"
+                 MouseLeftButtonDown="RulerBody_MouseLeftButtonDown"
+                 MouseMove="RulerBody_MouseMove"
+                 MouseLeftButtonUp="RulerBody_MouseLeftButtonUp"/>
+        <Path x:Name="RulerTicks" Stroke="#FF1E90FF" StrokeThickness="1.5"
+              Visibility="Collapsed"/>
+
         <!-- Draggable handles -->
         <Thumb x:Name="VertexThumb" Style="{StaticResource VertexThumb}"
-               DragDelta="VertexThumb_DragDelta"/>
+               DragDelta="VertexThumb_DragDelta"
+               ContextMenu="{StaticResource HandleMenu}"/>
         <Thumb x:Name="End1Thumb" Style="{StaticResource HandleThumb}"
                DragDelta="End1Thumb_DragDelta"/>
         <Thumb x:Name="End2Thumb" Style="{StaticResource HandleThumb}"
                DragDelta="End2Thumb_DragDelta"/>
 
-        <!-- Angle readout -->
+        <!-- Angle / length readout -->
         <Border x:Name="ReadoutBorder" Background="#CC202020" CornerRadius="6"
                 Padding="10,6" BorderBrush="#FFFF8C00" BorderThickness="1">
             <StackPanel>
                 <TextBlock x:Name="AngleText" Foreground="White" FontSize="22"
                            FontWeight="Bold" Text="0.0°"/>
-                <TextBlock Foreground="#FFBBBBBB" FontSize="11"
+                <TextBlock x:Name="HintText" Foreground="#FFBBBBBB" FontSize="11"
                            Text="拖动橙色点移动 · 拖动蓝色点旋转"/>
             </StackPanel>
         </Border>
