@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB2}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppxPackage>true</AppxPackage>
+    <AppxManifest>Package.appxmanifest</AppxManifest>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <AppxSymbolPackageEnabled>false</AppxSymbolPackageEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Protractor.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\DesktopBridge\DesktopBridge.props" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\DesktopBridge\DesktopBridge.targets" />
+</Project>

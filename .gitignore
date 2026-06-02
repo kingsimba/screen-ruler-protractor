@@ -3,3 +3,9 @@
 /obj
 publish
 publish-single
+dist/
+publish-msix/
+msix-content/
+*.msix
+Protractor.Package/Cert.pfx
+Protractor.Package/AppPackages/
