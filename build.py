@@ -51,7 +51,9 @@ def cmd_msix(args):
             f'$pwd = ConvertTo-SecureString -String "temp1234" -Force -AsPlainText; '
             f'Export-PfxCertificate -Cert $cert -FilePath "{cert_path}" -Password $pwd'
         )
-        subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], cwd=ROOT, check=True)
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_cmd], cwd=ROOT, check=True
+        )
 
     # 2) dotnet publish
     publish_dir = ROOT / "msix-content"
@@ -60,20 +62,35 @@ def cmd_msix(args):
 
     print(f"==> dotnet publish -c {config} -o {publish_dir}")
     subprocess.run(
-        ["dotnet", "publish", "Protractor.csproj", "-c", config, "-o", str(publish_dir)],
-        cwd=ROOT, check=True,
+        [
+            "dotnet",
+            "publish",
+            "Protractor.csproj",
+            "-c",
+            config,
+            "-o",
+            str(publish_dir),
+        ],
+        cwd=ROOT,
+        check=True,
     )
 
     # 3) Copy manifest + icons into publish output
-    shutil.copy2(ROOT / "Protractor.Package" / "Package.appxmanifest",
-                 publish_dir / "AppxManifest.xml")
+    shutil.copy2(
+        ROOT / "Protractor.Package" / "Package.appxmanifest",
+        publish_dir / "AppxManifest.xml",
+    )
     assets_src = WAP_DIR / "Assets"
     if assets_src.exists():
         shutil.copytree(assets_src, publish_dir / "Assets", dirs_exist_ok=True)
 
     # 4) MakeAppx: pack into .msix
     msix_path = ROOT / "Protractor.msix"
-    kits_root = Path(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")) / "Windows Kits" / "10"
+    kits_root = (
+        Path(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)"))
+        / "Windows Kits"
+        / "10"
+    )
     makeappx = next(kits_root.rglob("makeappx.exe"), None)
     if not makeappx:
         print("Error: makeappx.exe not found in Windows Kits")
@@ -81,16 +98,28 @@ def cmd_msix(args):
     print(f"==> Packing MSIX with {makeappx}")
     subprocess.run(
         [str(makeappx), "pack", "/d", str(publish_dir), "/p", str(msix_path), "/l"],
-        cwd=ROOT, check=True,
+        cwd=ROOT,
+        check=True,
     )
 
     # 5) SignTool: sign the .msix
     signtool = makeappx.parent / "signtool.exe"
     print(f"==> Signing MSIX with {signtool}")
     subprocess.run(
-        [str(signtool), "sign", "/fd", "SHA256", "/a",
-         "/f", str(cert_path), "/p", "temp1234", str(msix_path)],
-        cwd=ROOT, check=True,
+        [
+            str(signtool),
+            "sign",
+            "/fd",
+            "SHA256",
+            "/a",
+            "/f",
+            str(cert_path),
+            "/p",
+            "temp1234",
+            str(msix_path),
+        ],
+        cwd=ROOT,
+        check=True,
     )
 
     print(f"==> MSIX package created: {msix_path} ({_size_str(msix_path)})")
@@ -118,7 +147,9 @@ def _size_str(path: Path) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Protractor build script")
-    parser.add_argument("command", choices=["build", "msix", "clean"], help="Command to run")
+    parser.add_argument(
+        "command", choices=["build", "msix", "clean"], help="Command to run"
+    )
     parser.add_argument(
         "--version",
         "-v",
