@@ -1,4 +1,4 @@
-# 构建并打包 Protractor 为 MSIX 安装包
+# 构建并打包 Protractor 为 MSIX 安装包 (使用 Windows SDK 的 MakeAppx + SignTool)
 #
 # 两种签名方式（按优先级）：
 #   1. GitHub Secrets 中设置了 Base64_Encoded_Pfx 和 Pfx_Key → 使用正式证书签名
@@ -25,7 +25,6 @@ jobs:
     env:
       Solution_Name: Protractor.sln
       Wap_Project_Directory: Protractor.Package
-      Wap_Project_Path: Protractor.Package\Protractor.Package.wapproj
 
     steps:
       - name: Checkout
@@ -39,14 +38,20 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      # 添加 MSBuild 到 PATH
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+      # dotnet publish 编译应用
+      - name: dotnet publish
+        run: dotnet publish Protractor.csproj -c ${{ matrix.configuration }} -o msix-content
+
+      # 复制 manifest 和图标到发布目录
+      - name: Prepare MSIX content
+        run: |
+          Copy-Item "Protractor.Package\Package.appxmanifest" "msix-content\AppxManifest.xml" -Force
+          Copy-Item "Protractor.Package\Assets" "msix-content\Assets" -Recurse -Force
 
       # 生成或解码签名证书
       - name: Prepare certificate
         run: |
-          $certPath = Join-Path $env:Wap_Project_Directory "Cert.pfx"
+          $certPath = "msix-content\..\Cert.pfx"
           if ("${{ secrets.Base64_Encoded_Pfx }}" -ne "") {
             Write-Host "Using certificate from GitHub Secrets"
             $bytes = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
@@ -64,22 +69,21 @@ jobs:
             Write-Host "::notice::Self-signed certificate generated. MSIX will need manual cert trust on install."
           }
 
-      # 编译并打包 MSIX
-      - name: Build and package MSIX
+      # 使用 Windows SDK 的 MakeAppx 打包 MSIX
+      - name: MakeAppx
         run: |
-          msbuild $env:Wap_Project_Path `
-            /p:Configuration=${{ matrix.configuration }} `
-            /p:AppxPackage=true `
-            /p:AppxBundlePlatforms=x64 `
-            /p:AppxBundle=Never `
-            /p:UapAppxPackageBuildMode=CI `
-            /p:PackageCertificateKeyFile=Cert.pfx `
-            /p:PackageCertificatePassword="temp1234" `
-            /p:AppxPackageDir=AppPackages
+          $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter "makeappx.exe" | Select-Object -First 1 -ExpandProperty FullName
+          & "$makeappx" pack /d msix-content /p Protractor.msix /l
+
+      # 使用 SignTool 签名
+      - name: Sign MSIX
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" | Where-Object { $_.FullName -notlike "*arm*" } | Select-Object -First 1 -ExpandProperty FullName
+          & "$signtool" sign /fd SHA256 /a /f Cert.pfx /p temp1234 Protractor.msix
 
       # 上传 MSIX 包
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v4
         with:
           name: Protractor-${{ github.sha }}
-          path: ${{ env.Wap_Project_Directory }}\AppPackages\**\*.msix
+          path: Protractor.msix
